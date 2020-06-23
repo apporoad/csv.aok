@@ -1,0 +1,23 @@
+{
+  "name": "csv.aok",
+  "version": "1.0.0",
+  "description": "csv ext plugin for aok",
+  "main": "index.js",
+  "scripts": {
+    "test": "aok . -x"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/apporoad/csv.aok.git"
+  },
+  "keywords": [
+    "aok",
+    "csv"
+  ],
+  "author": "apporoad",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/apporoad/csv.aok/issues"
+  },
+  "homepage": "https://github.com/apporoad/csv.aok#readme"
+}
