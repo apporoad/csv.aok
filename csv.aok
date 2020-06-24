@@ -1,17 +1,129 @@
+const LiSASync = require('lisa.sync')
+const adapter = require('lisa.sync.csvadapter')
+const utils = require('lisa.utils')
+const uType = utils.Type
 
+const autoIndex = (array)=>{
+    var newArr = []
+    for(var i=0;i<array.length ;i ++){
+        var item = array[i]
+        var newItem = Object.assign({index:i},item)
+        newItem.index = i
+        newArr.push(newItem)
+    }
+    return newArr
+}
+const InitedPath = {}
+const getSync = path =>{
+    var sync = LiSASync(path,{internal : 5000},adapter)
+    if(!InitedPath[path]){
+        sync.sync(data=>{
+            InitedPath[path] = true
+            return autoIndex(data)
+        })
+    }
+    return sync
+}
 
 exports.searchPattern = /\.csv/
 
 exports.ext = '.csv'
 
-exports.get = (params , ctx , options, meta) => {
-    console.log(params)
-    console.log(ctx)
+var matchs = (condition , value )=>{
+    if(uType.isString(condition) && utils.startWith(condition,'/') && utils.endWith(condition,'/')){
+        var re =new RegExp(utils.endTrim(utils.startTrim(condition,'/'),'/'),'ig')
+        return re.test(value)
+    }
+    //console.log(condition, value)
+    return  condition == value
+}
+
+exports.get = async (params , ctx , options, meta) => {
+    var LiSA = getSync(meta.srcPath)
+    params = params || {}
+    params.pageSize = params.pageSize || 10
+    params.page = params.page || 0
+    params.order = params.order || ''
+
+    var list = LiSA.getSync()
+    
+    //filter
+    var conditions = Object.assign({},params)
+    delete conditions["pageSize"]
+    delete conditions["page"]
+    delete conditions["order"]
+    list = utils.ArrayFilter(list,params,(one,two)=>{
+        for(var condKey in conditions){
+            if(!matchs(conditions[condKey] , two[condKey])){
+                return false
+            }
+        }
+        return true
+    })
+    //order
+    if(params.order){
+        var ordersTemp = params.order.split([','])
+        var orders = []
+        ordersTemp.forEach(o => {
+            if(o){
+                var os = o.split(/[ ]+/g)
+                if(os.length>1){
+                    orders.push({
+                        key : os[0],
+                        asc : os[1].toUpperCase() != 'DESC'
+                    })
+                }
+                else{
+                    orders.push({
+                        key : os[0],
+                        asc : true
+                    })
+                }
+            }
+        });
+        list = utils.ArraySort(list,(one,two)=>{
+            for(var i =0 ;i<orders.length;i++){
+                var o = orders[i]
+                if(one[o.key] == two[o.key]){
+                    continue
+                }
+                return (one[o.key] > two[o.key] ? 1 : -1 ) *(o.asc ? 1: -1)
+            }
+            return 1
+        })
+    }
+    //page
+    var list = list.slice(params.pageSize * params.page , (params.page+1)*params.pageSize)
+
+    return list
+}
+
+exports.post = async (params , ctx , options , meta) => {
+    //console.log('sadfsdfsdfsd')
+    var LiSA = getSync(meta.srcPath)
+    if(Object.getOwnPropertyNames(params).length == 0){
+        return {
+            success : false,
+            data: null,
+            error : 'empty object cannot be added'
+        }
+    }
+    var data = null
+    LiSA.sync(arr=>{
+        data = Object.assign({index : arr.length } ,params)
+        arr.push(data)
+    })
+    return {
+        success : true,
+        data :  data,
+        msg : 'add successed!'
+    }
+}
+
+exports.put =(params , ctx , options , meta) => {
     console.log(meta)
 }
 
-exports.put =(params , ctx , options , meta) => {}
 
-exports.post =(params , ctx , options , meta) => {}
 
 exports.delete =(params , ctx , options , meta) => {}

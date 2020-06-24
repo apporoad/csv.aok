@@ -2,7 +2,7 @@
   "name": "csv.aok",
   "version": "1.0.0",
   "description": "csv ext plugin for aok",
-  "main": "index.js",
+  "main": "csv.aok",
   "scripts": {
     "test": "aok . -x"
   },
@@ -19,5 +19,10 @@
   "bugs": {
     "url": "https://github.com/apporoad/csv.aok/issues"
   },
-  "homepage": "https://github.com/apporoad/csv.aok#readme"
+  "homepage": "https://github.com/apporoad/csv.aok#readme",
+  "dependencies": {
+    "lisa.sync": "^1.2.1",
+    "lisa.sync.csvadapter": "^1.0.1",
+    "lisa.utils": "^2.4.0"
+  }
 }
