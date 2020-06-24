@@ -31,8 +31,13 @@ curl http://localhost:11540/test?name=/l.*/
 curl "http://localhost:11540/test?page=1&pageSize=2"
 curl http://localhost:11540/test?order=age%20asc
 
+# default page =0  pageSize =10  limit is null
+curl http://localhost:11540/test?name=/1.*/&limit=1
+
 ## put
 curl -H "Content-Type: application/json" -X PUT -d "{\"remark\":\"update\"}" http://localhost:11540/test?index=2 
+
+curl -X PUT -d "remark=update" http://localhost:11540/test?index=2 
 
 ## delete
 

@@ -52,6 +52,7 @@ exports.get = async (params , ctx , options, meta) => {
     delete conditions["pageSize"]
     delete conditions["page"]
     delete conditions["order"]
+    delete conditions["limit"]
     list = utils.ArrayFilter(list,params,(one,two)=>{
         for(var condKey in conditions){
             if(!matchs(conditions[condKey] , two[condKey])){
@@ -94,6 +95,11 @@ exports.get = async (params , ctx , options, meta) => {
     }
     //page
     var list = list.slice(params.pageSize * params.page , (params.page+1)*params.pageSize)
+
+    //limit
+    if(params.limit && !isNaN(params.limit)){
+        list = list.slice(0, parseInt(params.limit))
+    }
 
     return list
 }
