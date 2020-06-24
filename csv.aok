@@ -121,9 +121,62 @@ exports.post = async (params , ctx , options , meta) => {
 }
 
 exports.put =(params , ctx , options , meta) => {
-    console.log(meta)
+    //data  ctx.request.body 
+    //condition ctx.query
+    var data = ctx.request.body
+    if(!data || Object.getOwnPropertyNames(data).length == 0){
+        return {
+            success : false,
+            error : 'body cannot be empty'
+        }
+    }
+    var LiSA = getSync(meta.srcPath)
+    var list = LiSA.getSync()
+    
+    //filter
+    var conditions = ctx.query
+    list = utils.ArrayFilter(list,params,(one,two)=>{
+        for(var condKey in conditions){
+            if(!matchs(conditions[condKey] , two[condKey])){
+                return false
+            }
+        }
+        return true
+    })
+    LiSA.sync(arr=>{
+        list.forEach(one =>{
+            arr[one.index] = Object.assign(arr[one.index] , data)
+        })
+    })
+    return {
+        success : true,
+        msg : 'update success : ' + list.length
+    }
 }
 
 
 
-exports.delete =(params , ctx , options , meta) => {}
+exports.delete =(params , ctx , options , meta) => {
+
+    var LiSA = getSync(meta.srcPath)
+    var list = LiSA.getSync()
+    //filter
+    var conditions = params || {}
+    list = utils.ArrayFilter(list,params,(one,two)=>{
+        for(var condKey in conditions){
+            if(!matchs(conditions[condKey] , two[condKey])){
+                return false
+            }
+        }
+        return true
+    })
+    LiSA.sync(arr=>{
+        return autoIndex(utils.ArrayRemove(arr,list,(one,two)=>{
+            return one.index == two.index
+        }))
+    })
+    return {
+        success : true,
+        msg : 'deleted : ' + list.length
+    }
+}
